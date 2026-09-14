@@ -4,7 +4,7 @@
 # Abi Mirembe
 # Flavia Sherinah
 # Victoria Marvis
-# Mordecai
+# Mordecai Corey Kwezi
 
 
 class MobileMoneyAccount:

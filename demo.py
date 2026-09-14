@@ -4,7 +4,7 @@
 # Abi Mirembe
 # Flavia Sherinah
 # Victoria Marvis
-# Mordecai
+# Mordecai Corey Kwezi 
 
 from src.mobile_money import MobileMoneyAccount, InsufficientBalanceError
 
