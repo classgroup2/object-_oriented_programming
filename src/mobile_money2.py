@@ -7,7 +7,7 @@ class Account:
 class Transaction:
     pass
 
-#This class stores andmanages all transactions for an account
+#This class stores and manages all transactions for an account
 class TransactionHistory:
     
     def __init__(self, account: Account):
