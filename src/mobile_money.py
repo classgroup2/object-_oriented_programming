@@ -60,3 +60,6 @@ class MobileMoneyAccount:
 
 class InsufficientBalanceError(Exception):
     pass
+
+class agent:
+    pass
