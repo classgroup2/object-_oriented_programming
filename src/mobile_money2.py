@@ -17,13 +17,13 @@ class TransactionHistory:
     def add_transaction(self, transaction:Transaction):
         self.transactions.append(transaction)
 
-    def get_all(self):  #This methods just returns a Transaction list
+    def get_all(self):  #This method just returns a Transaction list
         return self.transactions
 
-    def get_last(self): # This methods returns either a Transaction or nothing as per the conditions below 
+    def get_last(self): # This method returns either a Transaction or nothing as per the conditions below 
         return self.transactions[-1] if self.transactions else None
 
-    def print_history(self):
+    def print_history(self): #This method returns transaction History
         if not self.transactions:
             print("No transactions yet.")
             return
