@@ -17,7 +17,7 @@ class Transaction:
                f"Amount: UGX {self.amount}, " \
                f"Date: {self.date_time}"
 
-#This class stores and manages all transactions for an account
+#Mordecai: git This class stores and manages all transactions for an account
 class TransactionHistory:
     
     def __init__(self, account: Account):
