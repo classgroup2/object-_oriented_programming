@@ -1,14 +1,21 @@
+# Group Members:
+# Mulisa Docile
+# Daniel Obar
+# Abi Mirembe
+# Flavia Sherinah
+# Victoria Marvis
+# Mordecai Corey Kwezi
+
 from datetime import datetime
 import uuid
 
-# Raised when balance is too low for a charge.
+
 class InsufficientBalanceError(Exception):
     pass
 
-# Represents the person who owns a mobile money account.
-class Customer:
 
-    all_customers: list["Customer"] = []          # every customer created, in order
+class Customer:
+    all_customers: list["Customer"] = []
 
     def __init__(self, name: str, phone_number: str, email: str):
         self.name = name
@@ -27,16 +34,14 @@ class Customer:
         for i, customer in enumerate(cls.all_customers, 1):
             print(f"{i}. {customer.get_details()}")
 
-# Manages the customer's airtime balance and all financial operations.
-class Account:
 
+class Account:
     def __init__(self, account_id: str, owner: Customer):
         self.account_id = account_id
         self.owner = owner
         self._balance = 0.0
-        self.history = None          # set by TransactionHistory(account)
+        self.history = None
 
-    # Records a transaction if a history is attached to this account.
     def _record(self, transaction_type: str, amount: float) -> None:
         if self.history is not None:
             self.history.add_transaction(Transaction(transaction_type, amount))
@@ -82,6 +87,10 @@ class Account:
         self._record("SMS", cost)
         return cost
 
+    @property
+    def balance(self) -> float:
+        return self._balance
+
     def check_balance(self) -> float:
         return self._balance
 
@@ -94,12 +103,10 @@ class Account:
         )
 
 
-# Records a single financial event on an account.
 class Transaction:
-
     def __init__(self, transaction_type: str, amount: float):
         self.transaction_id = str(uuid.uuid4())[:8]
-        self.transaction_type = transaction_type          # "TOP_UP", "CALL", "SMS"
+        self.transaction_type = transaction_type
         self.amount = amount
         self.date_time = datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -107,9 +114,7 @@ class Transaction:
         return f"{self.transaction_type:10} | UGX {self.amount:>7,.0f} | {self.date_time}"
 
 
-# Stores and manages all transactions for an account.
 class TransactionHistory:
-
     def __init__(self, account: Account):
         self.account = account
         self.transactions: list[Transaction] = []
@@ -132,21 +137,19 @@ class TransactionHistory:
             print(f"{i}. {t.get_details()}")
 
 
-# Represents a service agent who can perform operations on customer accounts.
 class Agent:
-
     def __init__(self, name: str, agent_id: str, branch: str):
         self.name = name
         self.agent_id = agent_id
         self.branch = branch
 
     def top_up_account(self, account: Account, amount: float) -> None:
-        account.top_up(amount)          # the account logs the TOP_UP transaction
+        account.top_up(amount)
         print(f"Agent {self.name} topped up UGX {amount:,.0f}")
         print(f"Balance: UGX {account.check_balance():,.0f}")
 
     def withdraw_from_account(self, account: Account, amount: float) -> None:
-        account.withdraw(amount)        # the account logs the WITHDRAWAL transaction
+        account.withdraw(amount)
         print(f"Agent {self.name} processed a withdrawal of UGX {amount:,.0f}")
         print(f"Balance: UGX {account.check_balance():,.0f}")
 
