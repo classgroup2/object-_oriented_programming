@@ -1,124 +1,85 @@
-class Customer:
-    all_accounts = []
+from datetime import datetime
+import uuid
 
-    def __init__(self, name, contact, balance=0):
-        self.name = name
-        self.contact = contact
-        self.balance = balance
-
-    @property
-    def phone_number(self):
-        return self.contact
-
-    @property
-    def owner_name(self):
-        return self.name
-
-    def __str__(self):
-        return f"Account\nName: {self.name}\nContact: {self.contact}\nBalance: {self.balance}"
-
-    @classmethod
-    def add_customer(cls):
-        while True:
-            name = input("Enter Customer Name: ")
-            contact = input("Enter Contact Number: ")
-        
-            while True:
-                balance_input = input("Enter starting balance or press enter for 0")
-                if balance_input == "":
-                    balance = 0
-                    break
-                try:
-                    balance = float(balance_input)
-                    break
-                except ValueError:
-                    print("Please enter a valid number")
-
-            new_customer = cls(name, contact, balance)
-            cls.all_accounts.append(new_customer)
-            print(f"Customer {name} added successfully!")
-
-            while True:
-                try:
-                    another_input = int(input("Add another customer?\n1. Yes\n2. No: "))
-                    if another_input == 1:
-                        break         # breaks the validation loop, goes back to outer while True
-                    elif another_input == 2:
-                        return        # exits add_customer entirely, back to main menu
-                    else:
-                        print("Please enter 1 or 2")
-                except ValueError:
-                    print("Please enter a valid number (1 or 2)")
-
-    @classmethod
-    def view_customers(cls):
-        print("\n---Customer Accounts---")
-        if not cls.all_accounts:
-            print("No customers yet.")
-        else:
-            for c in cls.all_accounts:
-                print(c)
-                print()
-
-def main_menu():
-    while True:
-        print("--------Telecom Service--------")
-        print("1. Add customer")
-        print("2. View customer list")
-        print("3. Exit")
-        choice = input("Choose an option: ").strip()
-
-        if choice == "1":
-            Customer.add_customer()
-        elif choice == "2":
-            Customer.view_customers()
-        elif choice == "3":
-            print("Thank you!")
-            break
-        else:
-            print("Invalid option, please choose 1, 2, or 3.\n")
-
-
+# Raised when balance is too low for a charge.
 class InsufficientBalanceError(Exception):
     pass
 
+# Represents the person who owns a mobile money account.
+class Customer:
 
+    all_customers: list["Customer"] = []          # every customer created, in order
 
+    def __init__(self, name: str, phone_number: str, email: str):
+        self.name = name
+        self.phone_number = phone_number
+        self.email = email
+        Customer.all_customers.append(self)
+
+    def get_details(self) -> str:
+        return f"Name: {self.name}, Phone: {self.phone_number}, Email: {self.email}"
+
+    @classmethod
+    def print_all_customers(cls) -> None:
+        if not cls.all_customers:
+            print("No customers registered yet.")
+            return
+        for i, customer in enumerate(cls.all_customers, 1):
+            print(f"{i}. {customer.get_details()}")
+
+# Manages the customer's airtime balance and all financial operations.
 class Account:
+
     def __init__(self, account_id: str, owner: Customer):
         self.account_id = account_id
         self.owner = owner
         self._balance = 0.0
+        self.history = None          # set by TransactionHistory(account)
 
-    @property
-    def balance(self):
-        return self._balance
-
-    @property
-    def owner_name(self):
-        return self.owner.name
+    # Records a transaction if a history is attached to this account.
+    def _record(self, transaction_type: str, amount: float) -> None:
+        if self.history is not None:
+            self.history.add_transaction(Transaction(transaction_type, amount))
 
     def top_up(self, amount: float) -> None:
         if amount <= 0:
             raise ValueError("Top-up amount must be positive")
         self._balance += amount
+        self._record("TOP_UP", amount)
+
+    def withdraw(self, amount: float) -> float:
+        if amount <= 0:
+            raise ValueError("Withdrawal amount must be positive")
+        if amount > self._balance:
+            raise InsufficientBalanceError(
+                f"Insufficient balance. Need UGX {amount:,.0f}, have UGX {self._balance:,.0f}."
+            )
+        self._balance -= amount
+        self._record("WITHDRAWAL", amount)
+        return amount
 
     def charge_call(self, minutes: int, rate_per_minute: float) -> float:
+        if minutes <= 0 or rate_per_minute <= 0:
+            raise ValueError("Minutes and rate per minute must be positive")
         cost = minutes * rate_per_minute
         if cost > self._balance:
             raise InsufficientBalanceError(
                 f"Insufficient balance. Need UGX {cost:,.0f}, have UGX {self._balance:,.0f}."
             )
         self._balance -= cost
+        self._record("CALL", cost)
         return cost
 
     def charge_sms(self, count: int, cost_per_sms: float) -> float:
+        if count <= 0 or cost_per_sms <= 0:
+            raise ValueError("SMS count and cost per SMS must be positive")
         cost = count * cost_per_sms
         if cost > self._balance:
             raise InsufficientBalanceError(
                 f"Insufficient balance. Need UGX {cost:,.0f}, have UGX {self._balance:,.0f}."
             )
         self._balance -= cost
+        self._record("SMS", cost)
         return cost
 
     def check_balance(self) -> float:
@@ -133,81 +94,61 @@ class Account:
         )
 
 
+# Records a single financial event on an account.
 class Transaction:
-    def __init__(self, transaction_id, transaction_type, amount, date_time):
-        self.transaction_id = transaction_id
-        self.transaction_type = transaction_type
+
+    def __init__(self, transaction_type: str, amount: float):
+        self.transaction_id = str(uuid.uuid4())[:8]
+        self.transaction_type = transaction_type          # "TOP_UP", "CALL", "SMS"
         self.amount = amount
-        self.date_time = date_time
+        self.date_time = datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    def get_details(self):
-        return f"Transaction ID: {self.transaction_id}, " \
-               f"Type: {self.transaction_type}, " \
-               f"Amount: UGX {self.amount}, " \
-               f"Date: {self.date_time}"
+    def get_details(self) -> str:
+        return f"{self.transaction_type:10} | UGX {self.amount:>7,.0f} | {self.date_time}"
 
-#Mordecai: This class stores and manages all transactions for an account
+
+# Stores and manages all transactions for an account.
 class TransactionHistory:
-    
+
     def __init__(self, account: Account):
         self.account = account
         self.transactions: list[Transaction] = []
+        account.history = self
 
-    def add_transaction(self, transaction:Transaction):
+    def add_transaction(self, transaction: Transaction) -> None:
         self.transactions.append(transaction)
 
-    def get_all(self):  #This method just returns a Transaction list
+    def get_all(self) -> list[Transaction]:
         return self.transactions
 
-    def get_last(self): # This method returns either a Transaction or nothing as per the conditions below 
+    def get_last(self) -> Transaction | None:
         return self.transactions[-1] if self.transactions else None
 
-    def print_history(self): #This method returns transaction History
+    def print_history(self) -> None:
         if not self.transactions:
             print("No transactions yet.")
             return
         for i, t in enumerate(self.transactions, 1):
             print(f"{i}. {t.get_details()}")
 
-# Obar: This is the class that deals with the agent attribute in the transaction cycle
+
+# Represents a service agent who can perform operations on customer accounts.
 class Agent:
-    def __init__(self, name, agent_id, branch):
-        self._name = name
-        self._agent_id = agent_id
-        self._branch = branch
-        self._transaction_log = []
 
-    @property
-    def name(self):
-        return self._name
+    def __init__(self, name: str, agent_id: str, branch: str):
+        self.name = name
+        self.agent_id = agent_id
+        self.branch = branch
 
-    @property
-    def agent_id(self):
-        return self._agent_id
+    def top_up_account(self, account: Account, amount: float) -> None:
+        account.top_up(amount)          # the account logs the TOP_UP transaction
+        print(f"Agent {self.name} topped up UGX {amount:,.0f}")
+        print(f"Balance: UGX {account.check_balance():,.0f}")
 
-    @property
-    def branch(self):
-        return self._branch
+    def withdraw_from_account(self, account: Account, amount: float) -> None:
+        account.withdraw(amount)        # the account logs the WITHDRAWAL transaction
+        print(f"Agent {self.name} processed a withdrawal of UGX {amount:,.0f}")
+        print(f"Balance: UGX {account.check_balance():,.0f}")
 
-    @property
-    def transaction_log(self):
-        return self._transaction_log
-
-    def top_up_account(self, account, amount):
-        if amount <= 0:
-            raise ValueError("Top-up amount must be positive.")
-
-        account.top_up(amount)
-        entry = (
-            f"Agent {self._name} ({self._agent_id}) topped up "
-            f"{account.owner_name}'s account with UGX {amount:,.0f}."
-        )
-        self._transaction_log.append(entry)
-        print(f"[{self._branch}] {entry} New Balance: UGX {account.balance:,.0f}")
-
-    def check_account(self, account):
+    def check_account(self, account: Account) -> None:
         print(account.summary())
-
-
-if __name__ == "__main__":
-    main_menu()
