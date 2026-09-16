@@ -40,6 +40,7 @@ class TransactionHistory:
         for i, t in enumerate(self.transactions, 1):
             print(f"{i}. {t.get_details()}")
 #obar
+
 class Agent:
     def __init__(self, name, agent_id, branch):
         self._name = name
