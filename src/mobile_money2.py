@@ -1,14 +1,21 @@
 class Customer:
     all_accounts = []
 
-    def __init__(self, name, contact, balance):
-            self.name = name
-            self.contact = contact
-            self.balance = balance
-            
+    def __init__(self, name, contact, balance=0):
+        self.name = name
+        self.contact = contact
+        self.balance = balance
+
+    @property
+    def phone_number(self):
+        return self.contact
+
+    @property
+    def owner_name(self):
+        return self.name
 
     def __str__(self):
-            return f"Account\nName: {self.name}\nContact: {self.contact}\nBalance: {self.balance}"    
+        return f"Account\nName: {self.name}\nContact: {self.contact}\nBalance: {self.balance}"
 
     @classmethod
     def add_customer(cls):
@@ -72,18 +79,24 @@ def main_menu():
             print("Invalid option, please choose 1, 2, or 3.\n")
 
 
-main_menu()
+class InsufficientBalanceError(Exception):
+    pass
 
-            
-"""Customer.add_customer()
-for c in Customer.all_accounts:
-     print(c)"""
+
 
 class Account:
     def __init__(self, account_id: str, owner: Customer):
         self.account_id = account_id
         self.owner = owner
-        self._balance = 0.0          # private, starts at 0
+        self._balance = 0.0
+
+    @property
+    def balance(self):
+        return self._balance
+
+    @property
+    def owner_name(self):
+        return self.owner.name
 
     def top_up(self, amount: float) -> None:
         if amount <= 0:
@@ -133,7 +146,7 @@ class Transaction:
                f"Amount: UGX {self.amount}, " \
                f"Date: {self.date_time}"
 
-#Mordecai: git This class stores and manages all transactions for an account
+#Mordecai: This class stores and manages all transactions for an account
 class TransactionHistory:
     
     def __init__(self, account: Account):
@@ -155,8 +168,8 @@ class TransactionHistory:
             return
         for i, t in enumerate(self.transactions, 1):
             print(f"{i}. {t.get_details()}")
-#obar
 
+# Obar: This is the class that deals with the agent attribute in the transaction cycle
 class Agent:
     def __init__(self, name, agent_id, branch):
         self._name = name
@@ -194,3 +207,7 @@ class Agent:
 
     def check_account(self, account):
         print(account.summary())
+
+
+if __name__ == "__main__":
+    main_menu()
