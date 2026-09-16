@@ -80,7 +80,45 @@ for c in Customer.all_accounts:
      print(c)"""
 
 class Account:
-    pass
+    def __init__(self, account_id: str, owner: Customer):
+        self.account_id = account_id
+        self.owner = owner
+        self._balance = 0.0          # private, starts at 0
+
+    def top_up(self, amount: float) -> None:
+        if amount <= 0:
+            raise ValueError("Top-up amount must be positive")
+        self._balance += amount
+
+    def charge_call(self, minutes: int, rate_per_minute: float) -> float:
+        cost = minutes * rate_per_minute
+        if cost > self._balance:
+            raise InsufficientBalanceError(
+                f"Insufficient balance. Need UGX {cost:,.0f}, have UGX {self._balance:,.0f}."
+            )
+        self._balance -= cost
+        return cost
+
+    def charge_sms(self, count: int, cost_per_sms: float) -> float:
+        cost = count * cost_per_sms
+        if cost > self._balance:
+            raise InsufficientBalanceError(
+                f"Insufficient balance. Need UGX {cost:,.0f}, have UGX {self._balance:,.0f}."
+            )
+        self._balance -= cost
+        return cost
+
+    def check_balance(self) -> float:
+        return self._balance
+
+    def summary(self) -> str:
+        return (
+            f"  Account ID  : {self.account_id}\n"
+            f"  Phone Number: {self.owner.phone_number}\n"
+            f"  Owner       : {self.owner.name}\n"
+            f"  Balance     : UGX {self._balance:,.0f}"
+        )
+
 
 class Transaction:
     def __init__(self, transaction_id, transaction_type, amount, date_time):
