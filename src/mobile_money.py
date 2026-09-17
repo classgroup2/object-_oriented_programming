@@ -1,11 +1,11 @@
 # Group Members:
-# Mulisa Docile
-# Daniel Obar
-# Abi Mirembe
-# Flavia Sherinah
-# Victoria Marvis
-# Mordecai Corey Kwezi
-
+# Mulisa Docile -----S25B38/033
+# Daniel Obar -----M25B38/014 
+# Abi Mirembe -----M25B38/022
+# Flavia Sherinah -----S25B38/031
+# Victoria Marvis -----S25B38/014
+# Mordecai Corey Kwezi -----M25B38/024
+#the github link is https://github.com/classgroup2/object-_oriented_programming
 from datetime import datetime
 import uuid
 
