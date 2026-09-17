@@ -19,25 +19,33 @@ def main():
     print("=" * 45)
     print("   MOBILE MONEY / AIRTIME SYSTEM DEMO")
     print("=" * 45)
+    print()
 
+    # Step 1: Create the customer
     customer = Customer("Mulisa Docile", "0700123456", "mulisa@email.com")
     print(f"\nCustomer created: {customer.get_details()}")
 
+    # Step 2: Create the account (balance starts at UGX 0)
     account = Account("ACC001", customer)
+
+    # Step 3: Attach a transaction history to the account
     history = TransactionHistory(account)
     print(f"Account created: {account.account_id}")
 
+    # Step 4: Agent tops up the account
     agent = Agent("Daniel Obar", "AGT001", "Kampala Branch")
     print(f"Agent: {agent.name} ({agent.agent_id}) - {agent.branch}")
 
     print("\n--- Agent Top-Up ---")
     agent.top_up_account(account, 50000)
 
+    # Step 5: Successful voice call
     print("\n--- Voice Call ---")
     cost = account.charge_call(minutes=30, rate_per_minute=200)
     print(f"30 min call @ UGX 200/min = UGX {cost:,.0f}")
     print(f"Balance: UGX {account.balance:,.0f}")
 
+    # Step 6: Successful SMS
     print("\n--- Send SMS ---")
     cost = account.charge_sms(count=5, cost_per_sms=100)
     print(f"5 SMS @ UGX 100 each = UGX {cost:,.0f}")
@@ -46,6 +54,7 @@ def main():
     print("\n--- Agent Withdrawal ---")
     agent.withdraw_from_account(account, 5000)
 
+    # Step 7: Operation that must be refused (insufficient balance)
     print("\n--- Insufficient Balance (Expected to Fail) ---")
     try:
         account.charge_call(minutes=300, rate_per_minute=200)

@@ -9,11 +9,11 @@
 from datetime import datetime
 import uuid
 
-
+# Raised when balance is too low for a charge.
 class InsufficientBalanceError(Exception):
     pass
 
-
+# Represents the person who owns a mobile money account.
 class Customer:
     all_customers: list["Customer"] = []
 
@@ -35,12 +35,13 @@ class Customer:
             print(f"{i}. {customer.get_details()}")
 
 
+# Manages the customer's airtime balance and all financial operations.
 class Account:
     def __init__(self, account_id: str, owner: Customer):
         self.account_id = account_id
         self.owner = owner
         self._balance = 0.0
-        self.history = None
+        self.history = None   # set by TransactionHistory(account)
 
     def _record(self, transaction_type: str, amount: float) -> None:
         if self.history is not None:
@@ -103,6 +104,7 @@ class Account:
         )
 
 
+# Records a single financial event on an account.
 class Transaction:
     def __init__(self, transaction_type: str, amount: float):
         self.transaction_id = str(uuid.uuid4())[:8]
@@ -114,6 +116,7 @@ class Transaction:
         return f"{self.transaction_type:10} | UGX {self.amount:>7,.0f} | {self.date_time}"
 
 
+# Stores and manages all transactions for an account.
 class TransactionHistory:
     def __init__(self, account: Account):
         self.account = account
@@ -137,6 +140,7 @@ class TransactionHistory:
             print(f"{i}. {t.get_details()}")
 
 
+# Represents a service agent who can perform operations on customer accounts.
 class Agent:
     def __init__(self, name: str, agent_id: str, branch: str):
         self.name = name
